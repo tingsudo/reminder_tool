@@ -2,6 +2,8 @@ name: Daily Task Notification
 
 on:
   schedule:
+    # 每天北京时间 01:00 (对应 UTC 17:00 前一天)
+    - cron: '0 17 * * *'
     # 每天北京时间 07:30 (对应 UTC 23:30 前一天)
     - cron: '30 23 * * *'
     # 每天北京时间 14:00 (对应 UTC 06:00)
