@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-# 1. 配置环境：优先从系统环境读取
+# 1. 配置环境：优先从系统环境读取吧
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://haknruuibpesnfmastws.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_5MuzSf_1GiX94Zw8vzmITA_EzyWPBu2")
 PIPEDREAM_URL = "https://eoixx30gpx9ym7f.m.pipedream.net" # 你的 Pipedream 地址
