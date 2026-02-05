@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xplorify任务提醒</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; font-size: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; font-size: 14px; }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            background-color: white;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Xplorify任务提醒</h1>
+        <form id="taskForm">
+            <div class="form-group">
+                <label for="task_content">任务内容</label>
+                <textarea id="task_content" placeholder="请输入任务内容..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="assignee">负责人</label>
+                <select id="assignee" required>
+                    <option value="" disabled selected>请选择负责人...</option>
+                    <option value="Zhang">Zhang</option>
+                    <option value="Flora">Flora</option>
+                    <option value="Ting">Ting</option>
+                    <option value="Vivian">Vivian</option>
+                    <option value="Mao">Mao</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">提交任务</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 1. 配置信息
+        const SUPABASE_URL = 'https://haknruuibpesnfmastws.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_5MuzSf_1GiX94Zw8vzmITA_EzyWPBu2'; 
+
+        // 2. 初始化客户端
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 3. 全局变量定义
+        const form = document.getElementById('taskForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const taskTextArea = document.getElementById('task_content'); // 新增：获取文本框引用
+
+        // ==========================================
+        // 【新增：自动填充逻辑】
+        // 页面加载完成后立即检查网址是否有 ?text=
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const textParam = urlParams.get('text');
+            
+            if (textParam) {
+                // 解码并填入文本框
+                taskTextArea.value = decodeURIComponent(textParam);
+                // 自动聚焦到文本框，方便你检查
+                taskTextArea.focus();
+            }
+        });
+        // ==========================================
+
+        // 4. 消息显示函数
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.className = 'message';
+            }, 5000);
+        }
+
+        // 5. 提交逻辑
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const taskContent = taskTextArea.value.trim();
+            const assignee = document.getElementById('assignee').value;
+
+            if (!taskContent || !assignee) {
+                showMessage('请填写完整信息', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            try {
+                const { error } = await _supabase
+                    .from('tasks')
+                    .insert([
+                        { 
+                            task_content: taskContent, 
+                            assignee: assignee, 
+                            status: 'pending' 
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                showMessage('任务已同步至数据库！', 'success');
+                form.reset();
+                
+                // 提交成功后清除 URL 参数，防止刷新页面重复填充
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+            } catch (error) {
+                console.error('Supabase Error:', error);
+                showMessage('提交失败: ' + (error.message || '未知错误'), 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交任务';
+            }
+        });
+    </script>
+</body>
+</html>
