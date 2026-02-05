@@ -79,16 +79,24 @@ h2{color:#22c55e;margin:0 0 .5rem;}p{color:#666;margin:0;}</style></head>
 
 
 def list_html(assignee: str, tasks: list) -> str:
-    items = "".join(f"<li>{t['task_content']}</li>" for t in tasks)
+    items = "".join(
+        f'<li><span class="task-text">{html.escape(t["task_content"])}</span> '
+        f'<a class="complete-link" href="/api/action?id={html.escape(str(t["id"]))}">完成</a></li>'
+        for t in tasks
+    )
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{assignee} 的待办</title>
+<title>{html.escape(assignee)} 的待办</title>
 <style>body{{font-family:system-ui;margin:0;padding:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;}}
 .container{{max-width:500px;margin:0 auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.2);}}
 h1{{color:#333;font-size:1.5rem;margin:0 0 1rem;}}ul{{list-style:none;padding:0;margin:0;}}
-li{{padding:12px;border-bottom:1px solid #eee;}}li:last-child{{border:none;}}
+li{{padding:12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:12px;}}
+li:last-child{{border:none;}}
+.task-text{{flex:1;}}
+.complete-link{{color:#22c55e;font-size:14px;text-decoration:none;white-space:nowrap;}}
+.complete-link:hover{{text-decoration:underline;}}
 .empty{{color:#888;text-align:center;padding:2rem;}}</style></head>
-<body><div class="container"><h1>📋 {assignee} 的待办</h1>
+<body><div class="container"><h1>📋 {html.escape(assignee)} 的待办</h1>
 {"<ul>" + items + "</ul>" if tasks else '<p class="empty">暂无待办任务</p>'}
 </div></body></html>"""
 
