@@ -6,7 +6,7 @@ import os
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://haknruuibpesnfmastws.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_5MuzSf_1GiX94Zw8vzmITA_EzyWPBu2")
 # Vercel 部署的 action API（与 index.html 同域）
-BASE_URL = os.getenv("BASE_URL", "https://reminder-tool-orcin.vercel.app/api/action")
+BASE_URL = os.getenv("BASE_URL", "https://xplorify-reminder.zeabur.app/api/action")
 
 TEACHER_WEBHOOKS = {
     "Zhang": os.getenv("WEBHOOK_ZHANG", "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=6fb04ff9-89c2-4178-a873-224ec4ec6d11"),
