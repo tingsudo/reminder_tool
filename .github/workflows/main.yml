@@ -1,18 +1,12 @@
 name: Daily Task Notification
 
 on:
-  schedule:
-    # 每天北京时间 01:00 (UTC 17:00 前一天)
-    - cron: '0 17 * * *'
-    # 每天北京时间 07:30 (UTC 23:30 前一天)
-    - cron: '30 23 * * *'
-    # 每天北京时间 12:30 (对应 UTC 04:30) - 已更新
-    - cron: '30 4 * * *'
-    # 每天北京时间 14:00 (UTC 06:00)
-    - cron: '0 6 * * *'
-    # 每天北京时间 20:30 (UTC 12:30)
-    - cron: '30 12 * * *'
-  workflow_dispatch: # 保留手动触发开关，方便测试
+  # 接收来自 cron-job.org 的精准触发
+  repository_dispatch:
+    types: [external_cron_trigger]
+
+  # 允许你自己在 GitHub 页面手动点击 "Run workflow" 测试
+  workflow_dispatch: 
 
 jobs:
   build:
