@@ -1,0 +1,44 @@
+name: Daily Task Notification
+
+on:
+  schedule:
+    # 每天北京时间 01:00 (UTC 17:00 前一天)
+    - cron: '0 17 * * *'
+    # 每天北京时间 07:30 (UTC 23:30 前一天)
+    - cron: '30 23 * * *'
+    # 每天北京时间 14:00 (UTC 06:00)
+    - cron: '0 6 * * *'
+    # 每天北京时间 20:30 (UTC 12:30)
+    - cron: '30 12 * * *'
+  workflow_dispatch: # 保留手动触发开关，方便测试
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip' # 启用 pip 缓存，加快运行速度
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run notification script
+        env:
+          # 确保这些变量名与你 Python 代码中 os.getenv() 里的名字完全一致
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          WEBHOOK_ZHANG: ${{ secrets.WEBHOOK_ZHANG }}
+          WEBHOOK_FLORA: ${{ secrets.WEBHOOK_FLORA }}
+          WEBHOOK_TING: ${{ secrets.WEBHOOK_TING }}
+          WEBHOOK_VIVIAN: ${{ secrets.WEBHOOK_VIVIAN }}
+          WEBHOOK_MAO: ${{ secrets.WEBHOOK_MAO }}
+        run: python bot.py
